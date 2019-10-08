@@ -1,16 +1,19 @@
-// Tank-Style Sweep Sample
-// Copyright (c) 2012 Dimension Engineering LLC
-// See license.txt for license details.
-#define trigPin 13                                                              //trigger and echo pins for ultrasonic transducer
-#define echoPin 12
+// Tank-Style
+
+//#defines
 #define maxPower 100
 
-//functions
+#define uSonic1 13  //trig and echo are on the same pin (connect them together)
+//#define uSonic2 12
 
-long sonic(void);                      //this function will send an output pulse and collect the returning data with the ultrasonic transducer.  function produces an integer, needs no input
-
-long measure(long pulse);            //the data from the ultrasonic transducer is converted into a distance measurement
+//#includes
 #include <SabertoothSimplified.h>
+
+//functions
+long sonicCm(char uSonic);
+long sonicTime(char uSonic);
+float sonicMeters(char uSonic);
+
 
 // Mixed mode is for tank-style diff-drive robots.
 // Only Packet Serial actually has mixed mode, so this Simplified Serial library
@@ -93,8 +96,7 @@ void loop()
 
   while (1) {
 
-    pulse = sonic();
-    distance = measure(pulse);
+    distance = sonicCm(uSonic1); //using only uSonic1 for now
 
 
     if (millis() >= sysTime + 20) {
@@ -134,10 +136,7 @@ void loop()
 
     }
 
-
-
   }
-
 
 }
 
@@ -146,27 +145,24 @@ void loop()
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
 
-long sonic (void) {
+long sonicTime(char uSonic)//returns # of microseconds total in a long
+{ // The same pin is used to read the signal
 
-  digitalWrite(trigPin, 0);
+  pinMode(uSonic, OUTPUT);
+  digitalWrite(uSonic, LOW);
   delayMicroseconds(2);
-  digitalWrite(trigPin, 1);                   //send a 10 microsecond pulse out from the ultrasonic transducer
+  digitalWrite(uSonic, HIGH);
   delayMicroseconds(10);
-  digitalWrite(trigPin, 0);
-  long pulseTime = pulseIn(echoPin, HIGH);       //time the return pulse
+  digitalWrite(uSonic, LOW);
+  pinMode(uSonic, INPUT);
 
-  return pulseTime;                             //return the time taken by the pulse to return to the transducer
+  return (pulseIn(uSonic, HIGH));
 }
-
-
-
-long measure(long pulse) {                  //use the pulse data to fijd distance
-
-  long  range = pulse * 3.43 / 2;           //multiply by speed of sound (divided to get meters) and divide by 2 to account for the two way trip the sound waves must take
-  range = range / 100;                      //divide by 100 to get centimeters
-  //range = pulse*34 / 20;
-  //range = range / 100;
-
-  return range;                           //return the distance in cm
-
+float sonicMeters(char uSonic)//returns # of meters in a float
+{
+  return(sonicTime(uSonic) * 3.43 / 1000.0 / 2.0);
+}
+long sonicCm(char uSonic)//returns # of centimeters in a long
+{
+  return(100 * sonicMeters(uSonic));
 }
