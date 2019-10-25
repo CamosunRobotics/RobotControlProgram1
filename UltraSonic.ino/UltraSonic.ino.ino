@@ -9,7 +9,7 @@ Servo sonicServo1;
 
 
 long sonicTime(char uSonic);
-float sonicMeters(char uSonic);
+long sonicCM(char uSonic);
 
 void setup()
 {
@@ -42,7 +42,7 @@ long sonicTime(char uSonic)
 
   return (pulseIn(uSonic, HIGH));
 }
-float sonicMeters(char uSonic)
+long sonicCM(char uSonic)
 {
-  return(sonicTime(uSonic) * 3.43 / 1000.0 / 2.0);
+  return(sonicTime(uSonic) * 100* 3.43 / 1000.0 / 2.0);
 }
