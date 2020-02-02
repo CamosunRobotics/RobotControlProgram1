@@ -1,19 +1,16 @@
-// Tank-Style
 
-//#defines
+// Tank-Style Sweep Sample
+// Copyright (c) 2012 Dimension Engineering LLC
+// See license.txt for license details.
+                                                            
+#define sonic1 12//trig and echo pins are connected togther
+
 #define maxPower 100
 
-#define uSonic1 13  //trig and echo are on the same pin (connect them together)
-//#define uSonic2 12
-
-//#includes
-#include <SabertoothSimplified.h>
-
 //functions
-long sonicCm(char uSonic);
-long sonicTime(char uSonic);
-float sonicMeters(char uSonic);
 
+#include <SabertoothSimplified.h>
+#include <hcsr04.h>
 
 // Mixed mode is for tank-style diff-drive robots.
 // Only Packet Serial actually has mixed mode, so this Simplified Serial library
@@ -37,7 +34,7 @@ void setup()
   SabertoothTXPinSerial.begin(9600); // This is the baud rate you chose with the DIP switches.
 
   ST.drive(0); // The Sabertooth won't act on mixed mode until
-  ST.turn(0);  // it has received power levels for BOTH throttle and turning, since it
+  ST.turn(0);  // it has received power levels for BOTH throttle and turning, since it                                                                                                                              
   // mixes the two together to get diff-drive power levels for both motors.
   // So, we set both to zero initially.
 
@@ -57,9 +54,9 @@ void setup()
 // and the FAST sweep (backwards-to-forwards) is throttle.
 void loop()
 {
+  UltraSonicDistanceSensor();  
   int power;
 
-  long pulse;
   long distance;
   bool canMoveForward = false;
   bool canIncrementPower = false;
@@ -72,31 +69,27 @@ void loop()
       ST.drive(power);
       delay(20);
     }
-
     // Now, let's use a power level of 20 (out of 127) forward.
     // This way, our turning will have a radius. Mostly, the command
     // is just to demonstrate you can use drive() and turn() at the same time.
     ST.drive(20);
-
     // Ramp turning from full left to full right SLOWLY by waiting 50 ms (1/20th of a second) per value.
     for (power = -127; power <= 127; power ++)
     {
       ST.turn(power);
       delay(50);
     }
-
     // Now stop turning, and stop driving.
     ST.turn(0);
     ST.drive(0);
-
     // Wait a bit. This is so you can catch your robot if you want to. :-)
     delay(5000);
-
   */
 
   while (1) {
 
-    distance = sonicCm(uSonic1); //using only uSonic1 for now
+    
+    distance = getDis();
 
 
     if (millis() >= sysTime + 20) {
@@ -136,7 +129,10 @@ void loop()
 
     }
 
+
+
   }
+
 
 }
 
@@ -145,24 +141,3 @@ void loop()
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
 
-long sonicTime(char uSonic)//returns # of microseconds total in a long
-{ // The same pin is used to read the signal
-
-  pinMode(uSonic, OUTPUT);
-  digitalWrite(uSonic, LOW);
-  delayMicroseconds(2);
-  digitalWrite(uSonic, HIGH);
-  delayMicroseconds(10);
-  digitalWrite(uSonic, LOW);
-  pinMode(uSonic, INPUT);
-
-  return (pulseIn(uSonic, HIGH));
-}
-float sonicMeters(char uSonic)//returns # of meters in a float
-{
-  return(sonicTime(uSonic) * 3.43 / 1000.0 / 2.0);
-}
-long sonicCm(char uSonic)//returns # of centimeters in a long
-{
-  return(100 * sonicMeters(uSonic));
-}
