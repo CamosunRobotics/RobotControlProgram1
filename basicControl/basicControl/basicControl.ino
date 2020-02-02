@@ -54,7 +54,6 @@ void setup()
 // and the FAST sweep (backwards-to-forwards) is throttle.
 void loop()
 {
-  UltraSonicDistanceSensor();  
   int power;
 
   long distance;
