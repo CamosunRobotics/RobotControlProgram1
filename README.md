@@ -1,6 +1,8 @@
-# RobotControlProgram1
-This controls the tank robot
+# RobotControlProgram
 
-The hcsr04 folder is the most recent version of the ultrasonic library with Jeremy's sensor code as of Oct 25. Needs testing.
+A Raspberry Pi 4 will control both an Arduino Uno and an Arduino Mega
 
-Added SabretoothSimplified library
+The Uno will control a robotic arm
+
+The Mega will control sensors and the drive motor controllers.
+
