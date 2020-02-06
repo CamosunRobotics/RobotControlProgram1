@@ -7,8 +7,6 @@
 
 #define maxPower 100
 
-//sonic transducer pin
-#define sonic1 14
 
 
 
@@ -158,16 +156,12 @@ int getDis(char pin)
   delayMicroseconds(10);//timing
   digitalWrite(pin, LOW);
   pinMode(pin, INPUT);
-  
     //listen for response
-  unsigned long durationMicroSec = pulseIn(pin, HIGH);
-  signed long distanceCm = durationMicroSec / 2.0 * 0.0343;
+  signed long distanceCm = pulseIn(pin, HIGH) / 2.0 * 0.0343;
   if (distanceCm <= 4 || distanceCm > 400) {//valid range is 5-400cm
       return -1 ;
   } else {
       return distanceCm;
-      
   }
-  
 }
 
