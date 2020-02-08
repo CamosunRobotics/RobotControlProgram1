@@ -32,9 +32,23 @@ SabertoothSimplified ST; // We'll name the Sabertooth object ST.
 //
 // If you want to use a pin other than TX->1, see the SoftwareSerial example.
 
+//Global variables
+struct piData {
+  
+  char commandCode[30];
+  unsigned int payloadSize;
+  char payload[];
+  char checksum[15];
+  
+}incomingData;
+
 
 //Prototypes:
 int getDis(char pin);
+struct piData handlePiSerial(void);
+void handlePiCommand(struct piData);
+
+
 
 void setup()
 {
@@ -94,7 +108,11 @@ void loop()
   */
 
   while (1) {
-
+    incomingData = handlePiSerial();
+    handlePiCommands(incomingData);
+    
+    Serial.println(incomingData.commandCode);
+    
     
     distance = getDis(sonic1);
 
@@ -146,7 +164,77 @@ void loop()
 //////////////////////////////////////////////////////////////////////////////////////////////////
 //FUNCTIONS//
 //////////////////////////////////////////////////////////////////////////////////////////////////
-int getDis(char pin)
+
+
+struct piData handlePiSerial(void)
+{
+  /*
+  Format:
+  
+  char (1 byte)  
+  command code
+  
+  int (2 bytes)
+  the number of ints in the payload
+  
+  int[size]
+  the payload itself
+  
+  after that:
+  checksum
+  
+  
+  */
+ 
+  int checksum = 0;
+  struct piData newData;
+  char buffer[2000];
+  int num = 0;
+  
+  /*struct format:
+  char commandCode[30];
+  unsigned int payloadSize;
+  char payload[];
+  int checksum[15];
+  */
+  if(Serial.available())//skip this whole thing if theres nothing in the serial buffer
+  {
+    while(Serial.available()>0)
+    {
+        buffer[num] = Serial.read();
+        num++;
+      
+    }
+    
+    for(char num = 0; num < 30; num++)
+    {
+      //read the string into the data
+      newData.commandCode[num] = buffer[num];
+      
+    }
+    
+      //read the payload size into the data
+    newData.payloadSize = buffer[30]<<8 + buffer[31];//this is an int
+    
+
+    for(char num = 32; num < (32+newData.payloadSize); num++)
+    {
+      //read the payloadinto the data
+      newData.payload[num] = buffer[num];
+      
+    }  
+    
+    //checksum code here
+      
+      
+    
+    return newData;
+  }
+}
+void handlePiCommand
+
+  
+int getDis(char pin)//returns the distance in cm
 {
     //yell out a signal
   pinMode(pin, OUTPUT);
