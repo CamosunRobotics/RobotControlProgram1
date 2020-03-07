@@ -3,11 +3,8 @@
 // Copyright (c) 2012 Dimension Engineering LLC
 // See license.txt for license details.
                                                             
-#define sonic1 12//trig and echo pins are connected togther
-
-#define maxPower 100
-
-
+#define sonic1 12 //trig and echo pins are connected togther and to this pin
+#define maxPower 50
 
 
 //functions
@@ -33,21 +30,24 @@ SabertoothSimplified ST; // We'll name the Sabertooth object ST.
 // If you want to use a pin other than TX->1, see the SoftwareSerial example.
 
 //Global variables
-struct piData {
-  
-  char commandCode[30];
-  unsigned int payloadSize;
-  char payload[];
-  char checksum[15];
-  
-}incomingData;
+//struct piData {
+//  
+//  char commandCode[30];
+//  unsigned int payloadSize;
+//  char payload[];
+//  char checksum[15];
+//  
+//}incomingData;
 
 
 //Prototypes:
 int getDis(char pin);
 struct piData handlePiSerial(void);
 void handlePiCommand(struct piData);
+void go(signed int relativeSpeed);
 
+
+//for ST.turn, negatives turn to the right, positives to the left
 
 
 void setup()
@@ -108,132 +108,104 @@ void loop()
   */
 
   while (1) {
-    incomingData = handlePiSerial();
-    handlePiCommands(incomingData);
-    
-    Serial.println(incomingData.commandCode);
-    
-    
-    distance = getDis(sonic1);
 
-
-    if (millis() >= sysTime + 20) {
-
-      sysTime = millis();
-      canIncrementPower = true;
-
-    }
-
-    else {
+    int testTime = 15;
+    while(testTime)
+    {
+    //distance = getDis(sonic1);
+    //if(distance > 30)
+      {
+      delay(10);
+      go(80);
+      //delay(7000);
+      //ST.drive(40);
       
-      canIncrementPower = false;
-    
-    }
-
-    if (distance <= 30) {
-
-      power = 0;
-      ST.drive(0);
-      ST.turn(50);
-    }
-
-    if (distance > 30) {
-
-      canMoveForward = true;
-      ST.drive(power);
-      ST.turn(0);
-
-    }
-
-    if (canMoveForward == true && canIncrementPower == true) {
-
-      power = power + 1;
-      if (power > maxPower) {
-        power = maxPower;
+     // ST.turn(30);
+      testTime--;
       }
-
     }
-
-
-
   }
-
-
 }
+
+//    incomingData = handlePiSerial();
+//    handlePiCommands(incomingData);
+    
+//    Serial.println(incomingData.commandCode);
+    
+    
+//    distance = getDis(sonic1);
+
+
+//    if (millis() >= sysTime + 20) {
+//
+//      sysTime = millis();
+//      canIncrementPower = true;
+//
+//    }
+//
+//    else {
+//      
+//      canIncrementPower = false;
+//    
+//    }
+//
+//    if (distance <= 30) {
+//
+//      power = 0;
+//      ST.drive(0);
+//      ST.turn(50);
+//    }
+//
+//    if (distance > 30) {
+//
+//      canMoveForward = true;
+//      ST.drive(power);
+//      ST.turn(0);
+//
+//    }
+//
+//    if (canMoveForward == true && canIncrementPower == true) {
+//
+//      power = power + 1;
+//      if (power > maxPower) {
+//        power = maxPower;
+//      }
+//
+//    }
+//
+//  }
+//
+//}
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
 //FUNCTIONS//
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
-
-struct piData handlePiSerial(void)
+void go(signed int relativeSpeed)//experimentally tested, don't mess with this unless you know what you are doing
 {
-  /*
-  Format:
-  
-  char (1 byte)  
-  command code
-  
-  int (2 bytes)
-  the number of ints in the payload
-  
-  int[size]
-  the payload itself
-  
-  after that:
-  checksum
-  
-  
-  */
- 
-  int checksum = 0;
-  struct piData newData;
-  char buffer[2000];
-  int num = 0;
-  
-  /*struct format:
-  char commandCode[30];
-  unsigned int payloadSize;
-  char payload[];
-  int checksum[15];
-  */
-  if(Serial.available())//skip this whole thing if theres nothing in the serial buffer
+  int t = 8;
+  while(t)
   {
-    while(Serial.available()>0)
-    {
-        buffer[num] = Serial.read();
-        num++;
-      
-    }
-    
-    for(char num = 0; num < 30; num++)
-    {
-      //read the string into the data
-      newData.commandCode[num] = buffer[num];
-      
-    }
-    
-      //read the payload size into the data
-    newData.payloadSize = buffer[30]<<8 + buffer[31];//this is an int
-    
-
-    for(char num = 32; num < (32+newData.payloadSize); num++)
-    {
-      //read the payloadinto the data
-      newData.payload[num] = buffer[num];
-      
-    }  
-    
-    //checksum code here
-      
-      
-    
-    return newData;
+  ST.drive(relativeSpeed);
+  delay(25);
+  ST.turn(0);
+  ST.drive(0);
+  ST.turn(14);
+  //for turn:
+  //at 20 turns left 
+  //14 seems to be the sweet spot
+  //7 turns slightly right
+  delay(11);
+  ST.turn(0);
+  ST.drive(0);
+  t--;
   }
-}
-void handlePiCommand
-
+  delay(2);
   
+}
+
+
+
 int getDis(char pin)//returns the distance in cm
 {
     //yell out a signal
@@ -252,4 +224,3 @@ int getDis(char pin)//returns the distance in cm
       return distanceCm;
   }
 }
-
