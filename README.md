@@ -10,3 +10,5 @@ The Mega will control sensors and the drive motor controllers.
 
 Added a function to parse a packet from the pi.  needs testing
 Added a function to execute commands from th pi.
+
+Added a function that makes the robot go forward in a straight line.
